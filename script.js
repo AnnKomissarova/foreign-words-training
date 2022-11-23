@@ -29,16 +29,16 @@ const words = [
         translate: "сестра",
         example: "My sister is a doctor",
     },
-    {
-        word: "raspberry",
-        translate: "малина",
-        example: "My favorite berry is raspberry",
-    },
-    {
-        word: "armchair",
-        translate: "кресло",
-        example: "My grandfather loves to relax in the armchair",
-    },
+    // {
+    //     word: "raspberry",
+    //     translate: "малина",
+    //     example: "My favorite berry is raspberry",
+    // },
+    // {
+    //     word: "armchair",
+    //     translate: "кресло",
+    //     example: "My grandfather loves to relax in the armchair",
+    // },
 ];
 
 const card = document.querySelector(".flip-card");
@@ -59,7 +59,6 @@ function renderCard(arr) {
         card.append(doCard(item));
     })
 };
-
 renderCard(currentWords);
 
 function doCard({ word, translate, example }) {
@@ -69,9 +68,12 @@ function doCard({ word, translate, example }) {
 };
 
 mixing.addEventListener('click', () => {
-    let randomCard = currentWords[Math.floor(Math.random() * currentWords.length)];
-    doCard(randomCard);
+    doCard(getRandomCard(currentWords));
 });
+
+function getRandomCard(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+ }
 
 let current = 0;
 btnNext.onclick = function () {    
@@ -100,32 +102,92 @@ function showProgress() {
     doCard(currentWords[current]);    
 }
 
-//Переходим в режим тестирования
 btnExam.onclick = function() {
     card.classList.add('hidden');
     btnBack.classList.add('hidden');
     btnExam.classList.add('hidden');
     btnNext.classList.add('hidden');
     document.getElementById('study-mode').classList.add('hidden');
-    document.getElementById('exam-mode').classList.remove('hidden'); 
-    
-    renderExamCard(currentWords);
- };
-
-//Отрисовываем карточки 
- function renderExamCard(arr) {
+    document.getElementById('exam-mode').classList.remove('hidden');
+    renderExamCard(mixCards(currentWords));
+};
+ 
+function mixCards(arr) {
+    let newArr = [];
     arr.forEach((item) => {
-        examCards.append(doForeignExamCard(item));
-        examCards.append(doTranslatedExamCard(item));
+        newArr.push(doExamCard(item.word));
+        newArr.push(doExamCard(item.translate));
     })
+    return shuffle(newArr);
 };
 
-//Создаем карточку с английским словом
- function doForeignExamCard({word}) {
-    examCards.innerHTML = word;
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;  
+    while (currentIndex != 0) {        
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;      
+      [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }  
+    return array;
 };
 
-//Создаем карточку с переводом
-function doTranslatedExamCard({translate}) {
-    examCards.innerHTML = translate;
+function renderExamCard(arr) {
+    arr.forEach((item) => {
+        examCards.append(item);
+    })   
 };
+
+function doExamCard(key) {
+    let item = document.createElement("div");
+    item.classList.add('card');
+    item.textContent = key;
+    return item;
+};
+
+let firstCard = 0;
+let secondCard = 0;
+let firstCardIndex = 0;
+let secondCardIndex = 0;
+var size = Object.keys(words).length;
+let endIndex = 0
+let click = false;
+
+examCards.addEventListener('click', (event) => {
+    let card = event.target.closest('.card');
+    if (click === false) {
+        card.classList.add('correct');
+        firstCard = card;
+        firstCardIndex = currentWords.word.indexOf(card.textContent);
+        if (firstCardIndex === -1) {
+            firstCardIndex = currentWords.translate.indexOf(card.textContent);            
+        }
+        click = true;
+    }
+        else if (click === true) {
+            secondCard = card;
+            secondCardIndex = currentWords.word.indexOf(card.textContent);
+            if (secondCardIndex === -1) {
+                secondCardIndex = currentWords.translate.indexOf(card.textContent);
+            }
+
+            if (firstCardIndex === secondCardIndex) {
+                endIndex++;
+                firstCard.classList.add('fade-out');
+                secondCard.classList.add('correct');
+                secondCard.classList.add('fade-out');
+                if (endIndex === size) {
+                    alert("Поздравляю! Все верно!");
+                }
+                click = false;
+            }
+
+            else if (firstCardIndex !== secondCardIndex) {
+                click = false;
+                secondCard.classList.add('wrong');
+                setTimeout(() => {
+                    firstCard.classList.remove('correct');
+                    secondCard.classList.remove('wrong');
+                }, 500);
+            }
+        }
+})
