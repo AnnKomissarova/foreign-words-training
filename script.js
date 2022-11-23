@@ -149,6 +149,7 @@ btnExam.addEventListener('click', () => {
     document.getElementById('study-mode').classList.add('hidden');
     document.getElementById('exam-mode').classList.remove('hidden');
     renderExamCard(mixCards(currentWords));
+    
     timer = setInterval(() => {
         sec++;
         if (sec === 60) {
