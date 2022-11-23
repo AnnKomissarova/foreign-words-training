@@ -152,42 +152,48 @@ var size = Object.keys(words).length;
 let endIndex = 0
 let click = false;
 
-examCards.addEventListener('click', (event) => {
-    let card = event.target.closest('.card');
+examCards.addEventListener("click", (event) => {
+    let card = event.target.closest(".card");
     if (click === false) {
-        card.classList.add('correct');
-        firstCard = card;
-        firstCardIndex = currentWords.word.indexOf(card.textContent);
-        if (firstCardIndex === -1) {
-            firstCardIndex = currentWords.translate.indexOf(card.textContent);            
+      card.classList.add("correct");
+      firstCard = card;
+      firstCardIndex = currentWords.findIndex(
+        (it) => it.word === card.textContent
+      );
+      if (firstCardIndex === -1) {
+        firstCardIndex = currentWords.indexOf(
+          (it) => it.translate === card.textContent
+        );
+      }
+      click = true;
+      console.log("here");
+    } else if (click === true) {
+      secondCard = card;
+      secondCardIndex = currentWords.findIndex(
+        (it) => it.word === card.textContent
+      );
+      if (secondCardIndex === -1) {
+        secondCardIndex = currentWords.indexOf(
+          (it) => it.translate === card.textContent
+        );
+      }
+  
+      if (firstCardIndex === secondCardIndex) {
+        endIndex++;
+        firstCard.classList.add("fade-out");
+        secondCard.classList.add("correct");
+        secondCard.classList.add("fade-out");
+        if (endIndex === size) {
+          alert("Поздравляю! Все верно!");
         }
-        click = true;
+        click = false;
+      } else if (firstCardIndex !== secondCardIndex) {
+        click = false;
+        secondCard.classList.add("wrong");
+        setTimeout(() => {
+          firstCard.classList.remove("correct");
+          secondCard.classList.remove("wrong");
+        }, 500);
+      }
     }
-        else if (click === true) {
-            secondCard = card;
-            secondCardIndex = currentWords.word.indexOf(card.textContent);
-            if (secondCardIndex === -1) {
-                secondCardIndex = currentWords.translate.indexOf(card.textContent);
-            }
-
-            if (firstCardIndex === secondCardIndex) {
-                endIndex++;
-                firstCard.classList.add('fade-out');
-                secondCard.classList.add('correct');
-                secondCard.classList.add('fade-out');
-                if (endIndex === size) {
-                    alert("Поздравляю! Все верно!");
-                }
-                click = false;
-            }
-
-            else if (firstCardIndex !== secondCardIndex) {
-                click = false;
-                secondCard.classList.add('wrong');
-                setTimeout(() => {
-                    firstCard.classList.remove('correct');
-                    secondCard.classList.remove('wrong');
-                }, 500);
-            }
-        }
-})
+  });
