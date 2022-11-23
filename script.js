@@ -1,14 +1,4 @@
-const words = [
-    {
-        word: "apple",
-        translate: "яблоко",
-        example: "I like apples",
-    },
-    {
-        word: "car",
-        translate: "машина",
-        example: "I'm driving in a car",
-    },
+const words = [    
     {
         word: "book",
         translate: "книга",
@@ -29,16 +19,16 @@ const words = [
         translate: "сестра",
         example: "My sister is a doctor",
     },
-    // {
-    //     word: "raspberry",
-    //     translate: "малина",
-    //     example: "My favorite berry is raspberry",
-    // },
-    // {
-    //     word: "armchair",
-    //     translate: "кресло",
-    //     example: "My grandfather loves to relax in the armchair",
-    // },
+    {
+        word: "raspberry",
+        translate: "малина",
+        example: "My favorite berry is raspberry",
+    },
+    {
+        word: "armchair",
+        translate: "кресло",
+        example: "My grandfather loves to relax in the armchair",
+    },
 ];
 
 const card = document.querySelector(".flip-card");
@@ -47,6 +37,7 @@ const btnNext = document.querySelector('#next');
 const btnBack = document.querySelector('#back');
 const btnExam = document.querySelector('#exam');
 const examCards = document.querySelector('#exam-cards');
+const examTime = document.querySelector('#time');
 
 card.onclick = function () {
     card.classList.toggle('active');
@@ -56,7 +47,7 @@ const currentWords = [...words];
 
 function renderCard(arr) {
     arr.forEach((item) => {
-        card.append(doCard(item));
+        doCard(item);
     })
 };
 renderCard(currentWords);
@@ -102,16 +93,6 @@ function showProgress() {
     doCard(currentWords[current]);    
 }
 
-btnExam.onclick = function() {
-    card.classList.add('hidden');
-    btnBack.classList.add('hidden');
-    btnExam.classList.add('hidden');
-    btnNext.classList.add('hidden');
-    document.getElementById('study-mode').classList.add('hidden');
-    document.getElementById('exam-mode').classList.remove('hidden');
-    renderExamCard(mixCards(currentWords));
-};
- 
 function mixCards(arr) {
     let newArr = [];
     arr.forEach((item) => {
@@ -144,49 +125,77 @@ function doExamCard(key) {
     return item;
 };
 
+let sec = 0;
+let min = 0;
+let timer;
 let firstCard = 0;
 let secondCard = 0;
 let firstCardIndex = 0;
 let secondCardIndex = 0;
-var size = Object.keys(words).length;
+let size = Object.keys(words).length;
 let endIndex = 0
 let click = false;
+
+function getExamProgress(value) {
+    let result = (100 * (value + 1)) / size;
+    return Math.round(result);
+}
+
+btnExam.addEventListener('click', () => {
+    card.classList.add('hidden');
+    btnBack.classList.add('hidden');
+    btnExam.classList.add('hidden');
+    btnNext.classList.add('hidden');
+    document.getElementById('study-mode').classList.add('hidden');
+    document.getElementById('exam-mode').classList.remove('hidden');
+    renderExamCard(mixCards(currentWords));
+    timer = setInterval(() => {
+        sec++;
+        if (sec === 60) {
+            sec = 0;
+            min++
+        }
+        if (sec < 10) {
+            time.textContent = min + `:0` + sec;
+        }
+        else {
+            time.textContent = min + `:` + sec;
+        }
+    }, 1000)
+})
 
 examCards.addEventListener("click", (event) => {
     let card = event.target.closest(".card");
     if (click === false) {
       card.classList.add("correct");
       firstCard = card;
-      firstCardIndex = currentWords.findIndex(
-        (it) => it.word === card.textContent
-      );
+      firstCardIndex = currentWords.findIndex((it) => it.word === card.textContent);
       if (firstCardIndex === -1) {
-        firstCardIndex = currentWords.indexOf(
-          (it) => it.translate === card.textContent
-        );
+        firstCardIndex = currentWords.indexOf((it) => it.translate === card.textContent);
       }
       click = true;
-      console.log("here");
     } else if (click === true) {
       secondCard = card;
-      secondCardIndex = currentWords.findIndex(
-        (it) => it.word === card.textContent
-      );
+      secondCardIndex = currentWords.findIndex((it) => it.translate === card.textContent);
+
       if (secondCardIndex === -1) {
-        secondCardIndex = currentWords.indexOf(
-          (it) => it.translate === card.textContent
-        );
-      }
-  
+        secondCardIndex = currentWords.indexOf((it) => it.word === card.textContent);
+      }  
+
       if (firstCardIndex === secondCardIndex) {
+        document.querySelector('#correct-percent').textContent = getExamProgress(endIndex) + '%';        
+        document.querySelector('#exam-progress').value = getExamProgress(endIndex);
         endIndex++;
         firstCard.classList.add("fade-out");
         secondCard.classList.add("correct");
         secondCard.classList.add("fade-out");
+
         if (endIndex === size) {
-          alert("Поздравляю! Все верно!");
+            clearInterval(timer);
+        document.querySelector('.motivation').textContent = 'Поздравляю! Все верно!';
         }
         click = false;
+        
       } else if (firstCardIndex !== secondCardIndex) {
         click = false;
         secondCard.classList.add("wrong");
